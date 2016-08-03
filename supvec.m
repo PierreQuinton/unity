@@ -1,5 +1,5 @@
 
-RBF_kernel = @(lambda) @(x1, x2) exp(-lambda*norm(x1-x2)^2)
+RBF_kernel = @(lambda) @(x1, x2) exp(-lambda*norm(x1-x2)^2);
 
 function model = supvec_train(trainingDataTrue, trainingDataFalse, K = @(x1, x2) x1'*x2, softness = Inf)
 	K = @(x1, x2) K(x1', x2');
@@ -35,22 +35,31 @@ function model = supvec_train(trainingDataTrue, trainingDataFalse, K = @(x1, x2)
 	model = @(x) sign(arrayfun(@(i) K(supx(i, [1, end]), x), d)*c+b);
 endfunction
 
-X1 = [0 0; 1 1]
-X2 = [1 0; 0 1]
+X1 = [0 0; 1 1];
+X2 = [1 0; 0 1];
 
-model = supvec_train(X1, X2, RBF_kernel(1))
+model = supvec_train(X1, X2, RBF_kernel(1), 2);
 %model = supvec_train(X1, X2)
 
-f = @(x,y) model([x,y])
+f = @(x,y) model([x,y]);
 
-N = 18
-M = zeros(N, N);
-for i = 1:N
-	for j = 1:N
-		M(i, j) = f(i/N, (N-j)/N);
-	endfor
-endfor
-M
+u = linspace(-0.1, 1.1, 50);
+v = linspace(-0.1, 1.1, 50);
 
-ezplot(f, [0, 1])
+z = zeros(length(u), length(v));
+
+for i = 1:length(u)
+	for j = 1:length(v)
+		z(i,j) = f(u(i), v(j));
+	end
+end
+z = z';
+
+plot(X1(:, 1), X1(:, 2), 'k+','LineWidth', 2, ...
+	'MarkerSize', 7);
+hold on
+plot(X2(:, 1), X2(:, 2), 'ko', 'MarkerFaceColor', 'y', ...
+	'MarkerSize', 7);
+hold on
+contour(u, v, z, [0, 0], 'LineWidth', 2)
 
